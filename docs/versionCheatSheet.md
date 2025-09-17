@@ -12,7 +12,7 @@ cd ..
 # New "Release"/Milestone version steps
 1: Set milestone version on **develop branch** (without -SNAPSHOT) **BEFORE MERGE TO MAIN!**
 ```text
-mvn -q versions:set -DnewVersion=0.2.0 -DprocessAllModules -DgenerateBackupPoms=false
+mvn -q versions:set "-DnewVersion=0.1.0-init" -DprocessAllModules -DgenerateBackupPoms=false
 git commit -am "Release 0.2.0"
 ```
 2: merge **develop** to **main**  
