@@ -1,0 +1,51 @@
+@startuml SmartTV_Components
+
+skinparam backgroundColor #766868ff
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam PackageBackgroundColor #854a4aff
+skinparam PackageBorderColor #666666
+skinparam PackageFontColor #dddddd
+skinparam ComponentBackgroundColor #1a1a1a
+skinparam ComponentBorderColor #555555
+skinparam ComponentFontColor #dddddd
+skinparam ArrowColor #bbbbbb
+
+package "remote-client" {
+  [app] as rcApp
+  [ui] as rcUi
+  [adapter] as rcAd
+  [transport (TCP)] as rcTx
+}
+
+package "tv-server" {
+  [app] as srvApp
+  [adapter] as srvAd
+  [transport (TCP)] as srvTx
+  [broadcast] as srvBc
+}
+
+package "common (entity / logic / protocol)" {
+  [entity] as ent
+  [logic (SmartTv)] as log
+  [protocol (commands/codec)] as prot
+}
+
+' internal flows (split into separate lines)
+rcApp --> rcUi
+rcUi  --> rcAd
+rcAd  --> rcTx
+
+srvApp --> srvAd
+srvAd  --> srvTx
+srvAd  --> srvBc
+
+' dependencies on common
+rcAd  ..> prot : uses
+srvAd ..> prot : uses
+srvAd ..> log  : invokes
+
+' runtime connection
+rcTx <--> srvTx : TCP
+
+@enduml
