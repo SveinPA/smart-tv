@@ -36,8 +36,17 @@ public final class TvState {
    * 
    * @return The number of channels as an int.
    */
-  public int getChannels() {
+  public int getChannelRange() {
     return channels;
+  }
+
+  /**
+   * Returns the current channel of the TV.
+   * 
+   * @return The current channel as an int.
+   */
+  public int getCurrentChannel() {
+    return currentChannel;
   }
 
   /**
