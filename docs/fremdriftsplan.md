@@ -13,8 +13,8 @@
 ## Uke 38 — Del 1: Enkel Smart-TV + klient
 - [x] Spesifiser **protokoll v1** i `docs/protocol.md` (kommandoer, svar, feilkoder, eksempler)  
 - [x] `common/entity`: `TvState`, ev. `Channel`   
-- [ ] `common/logic`: `SmartTv` med `turnOn/turnOff/getNumberOfChannels/getChannel/setChannel`  
-- [ ] `common/protocol`: `Command`, `Message`, `Codec` (linjebasert UTF-8)  
+- [x] `common/logic`: `SmartTv` med `turnOn/turnOff/getNumberOfChannels/getChannel/setChannel`  
+- [x] `common/protocol`: `Command`, `Message`, `Codec` (linjebasert UTF-8)  
 - [ ] `tv-server/transport`: enkel TCP-server (lytt på port 1238, håndter én klient)  
 - [ ] `tv-server/adapter`: map kommandoer → `SmartTv` og bygg svar  
 - [ ] `remote-client/transport`: enkel TCP-klient (koble til host:port)  
