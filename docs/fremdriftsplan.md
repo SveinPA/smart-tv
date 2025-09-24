@@ -15,7 +15,7 @@
 - [x] `common/entity`: `TvState`, ev. `Channel`   
 - [x] `common/logic`: `SmartTv` med `turnOn/turnOff/getNumberOfChannels/getChannel/setChannel`  
 - [x] `common/protocol`: `Command`, `Message`, `Codec` (linjebasert UTF-8)  
-- [ ] `tv-server/transport`: enkel TCP-server (lytt på port 1238, håndter én klient)  
+- [x] `tv-server/transport`: enkel TCP-server (lytt på port 1238, håndter én klient)  
 - [X] `tv-server/adapter`: map kommandoer → `SmartTv` og bygg svar  
 - [ ] `remote-client/transport`: enkel TCP-klient (koble til host:port)  
 - [ ] `remote-client/ui`: minimal CLI (send kommando, vis svar)  

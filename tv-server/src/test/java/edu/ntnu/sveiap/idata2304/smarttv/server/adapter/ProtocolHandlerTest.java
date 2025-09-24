@@ -71,7 +71,7 @@ class ProtocolHandlerTest {
     SmartTv tv = new SmartTv(10);
     ProtocolHandler handler = new ProtocolHandler(tv);
 
-    assertEquals("OK\r\n", handler.handleLine("STATUS")); // Already off
+    assertEquals("OK\r\n", handler.handleLine("OFF")); // Already off
     assertEquals("OK\r\n", handler.handleLine("OFF")); // Still off
 
     assertEquals("OK\r\n", handler.handleLine("ON")); // Turn on
