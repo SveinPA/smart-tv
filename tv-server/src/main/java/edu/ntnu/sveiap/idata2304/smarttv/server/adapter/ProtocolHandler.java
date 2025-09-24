@@ -34,6 +34,14 @@ public class ProtocolHandler {
 
       return switch (cmd) {
         case STATUS -> Codec.okStatus(tv.isOn());
+        case ON -> {
+          tv.turnOn();
+          yield Codec.ok();
+        }
+        case OFF -> {
+          tv.turnOff();
+          yield Codec.ok();
+        }
         default -> Codec.errBadCommand();
       };
     } catch (IllegalArgumentException badSyntax) {

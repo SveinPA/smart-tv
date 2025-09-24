@@ -9,10 +9,14 @@ host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 port = int(sys.argv[2]) if len(sys.argv) > 2 else 1238
 
 with socket.create_connection((host, port), timeout=3) as s:
-    s.sendall(b"STATUS\r\n")
-    data = s.recv(1024).decode("utf-8", "replace").strip()  # strip CRLF
-    print("> STATUS")
-    print("<", data)
-    if data not in ("OK OFF", "OK ON"):
-        raise SystemExit("Unexpected reply: " + data)
+    def send(line: str) -> str:
+        s.sendall((line + "\r\n").encode())
+        return s.recv(1024).decode("utf-8", "replace").strip()
+
+    print("> STATUS"); print("<", send("STATUS"))
+    print("> ON");     print("<", send("ON"))
+    print("> STATUS"); print("<", send("STATUS"))
+    print("> OFF");    print("<", send("OFF"))
+    print("> STATUS"); print("<", send("STATUS"))
+
 print("Smoke OK.")

@@ -45,5 +45,37 @@ class ProtocolHandlerTest {
     assertEquals("ERR 400 BAD_COMMAND\r\n", handler.handleLine(""));
     assertEquals("ERR 400 BAD_COMMAND\r\n", handler.handleLine(null));
   }
+
+  /**
+   * Test a sequence of ON, STATUS, OFF, STATUS commands.
+   */
+  @Test
+  void onOffFlow() {
+    SmartTv tv = new SmartTv(10);
+    ProtocolHandler handler = new ProtocolHandler(tv);
+
+    assertEquals("OK OFF\r\n", handler.handleLine("STATUS"));
+
+    assertEquals("OK\r\n", handler.handleLine("ON"));
+    assertEquals("OK ON\r\n", handler.handleLine("STATUS"));
+
+    assertEquals("OK\r\n", handler.handleLine("OFF"));
+    assertEquals("OK OFF\r\n", handler.handleLine("STATUS"));
+  }
+
+  /**
+   * Test that turning the TV on when it's already on, or off when it's already off, is handled gracefully.
+   */
+  @Test
+  void idempotentOnOff() {
+    SmartTv tv = new SmartTv(10);
+    ProtocolHandler handler = new ProtocolHandler(tv);
+
+    assertEquals("OK\r\n", handler.handleLine("STATUS")); // Already off
+    assertEquals("OK\r\n", handler.handleLine("OFF")); // Still off
+
+    assertEquals("OK\r\n", handler.handleLine("ON")); // Turn on
+    assertEquals("OK\r\n", handler.handleLine("ON")); // Still on
+  }
   
 }
