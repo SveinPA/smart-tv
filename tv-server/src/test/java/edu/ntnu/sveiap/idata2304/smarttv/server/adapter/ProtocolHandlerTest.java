@@ -77,5 +77,38 @@ class ProtocolHandlerTest {
     assertEquals("OK\r\n", handler.handleLine("ON")); // Turn on
     assertEquals("OK\r\n", handler.handleLine("ON")); // Still on
   }
+
+  /**
+   * Test CHANNELS and GET commands when TV is off and on, and setting channels within range.
+   */
+  @Test
+  void channelsGetSetHappyPath() {
+    SmartTv tv = new SmartTv(7);
+    ProtocolHandler handler = new ProtocolHandler(tv);
+
+    assertEquals("ERR 401 TV_OFF\r\n", handler.handleLine("GET"));
+    assertEquals("ERR 401 TV_OFF\r\n", handler.handleLine("CHANNELS"));
+
+    handler.handleLine("ON");
+    assertEquals("OK C=7\r\n", handler.handleLine("CHANNELS"));
+    assertEquals("OK CH=1\r\n", handler.handleLine("GET")); // default channel on first ON
+
+    assertEquals("OK CH=5\r\n", handler.handleLine("SET 5"));
+    assertEquals("OK CH=5\r\n", handler.handleLine("GET"));
+  }
+
+  /**
+   * Test setting channels out of range and with bad syntax.
+   */
+  @Test void setOutOfRangeAndBadSyntax() {
+    SmartTv tv = new SmartTv(3);
+    ProtocolHandler handler = new ProtocolHandler(tv);
+    handler.handleLine("ON");
+
+    assertEquals("ERR 404 OUT_OF_RANGE\r\n", handler.handleLine("SET 0"));
+    assertEquals("ERR 404 OUT_OF_RANGE\r\n", handler.handleLine("SET 4"));
+    assertEquals("ERR 400 BAD_COMMAND\r\n", handler.handleLine("SET abc"));
+    assertEquals("ERR 400 BAD_COMMAND\r\n", handler.handleLine("SET"));
+  }
   
 }
