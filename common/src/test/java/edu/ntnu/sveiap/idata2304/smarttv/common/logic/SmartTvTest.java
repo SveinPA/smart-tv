@@ -46,4 +46,27 @@ class SmartTvTest {
     assertThrows(IllegalArgumentException.class, () -> smartTv.setChannel(0));
     assertThrows(IllegalArgumentException.class, () -> smartTv.setChannel(6));
   }
+
+  /**
+   * Tests channel up/down functionality without wrapping.
+   */
+  @Test
+  void upDownNoWrap() {
+    SmartTv tv = new SmartTv(3);
+    assertThrows(IllegalStateException.class, tv::channelUp); // TV is off
+    assertThrows(IllegalStateException.class, tv::channelDown); // TV is off
+
+    tv.turnOn();
+    // Initial channel is 1
+    assertThrows(IllegalStateException.class, tv::channelDown); // Already at min
+
+    tv.channelUp(); // 2
+    assertEquals(2, tv.getChannel());
+    tv.channelUp(); // 3
+    assertEquals(3, tv.getChannel());
+    assertThrows(IllegalStateException.class, tv::channelUp); // Already at max
+
+    tv.channelDown(); // 2
+    assertEquals(2, tv.getChannel());
+  }
 }

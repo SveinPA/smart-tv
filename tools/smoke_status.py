@@ -27,6 +27,10 @@ with socket.create_connection((host, port), timeout=3) as s:
     # SET 5 + GET
     print("> SET 5"); print("<", send("SET 5"))
     print("> GET"); print("<", send("GET"))
+    
+    # UP + DOWN
+    print("> UP");   print("<", send("UP"))
+    print("> DOWN"); print("<", send("DOWN"))
 
 print("Smoke OK.")
 

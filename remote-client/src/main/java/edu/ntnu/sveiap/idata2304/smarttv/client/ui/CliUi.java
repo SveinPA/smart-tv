@@ -85,7 +85,8 @@ public final class CliUi {
               ON / OFF               -> OK
               CHANNELS               -> OK C=<int>
               GET                    -> OK CH=<int>
-              SET <n>                -> OK CH=<n> (or ERR 404/401)
+              SET <n>                -> OK CH=<n>
+              UP / DOWN              -> OK CH=<n> (ERR 409 at edges)
             Local commands:
               help, exit
             """);

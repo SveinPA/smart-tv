@@ -82,5 +82,32 @@ public class SmartTv {
     }
   }
 
+  /**
+   * Increases the current channel by 1.
+   * @throws IllegalArgumentException if the channel is already at the maximum.
+   */
+  public synchronized void channelUp() {
+    ensureOn();
+    int ch = tvState.getCurrentChannel();
+    int max = tvState.getChannelRange();
+    if (ch >= max) {
+      throw new IllegalStateException("INVALID_STATE");
+    }
+    tvState.setCurrentChannel(ch + 1);
+  }
+
+  /**
+   * Decreases the current channel by 1.
+   * @throws IllegalArgumentException if the channel is already at the minimum.
+   */
+  public synchronized void channelDown() {
+    ensureOn();
+    int ch = tvState.getCurrentChannel();
+    if (ch <= 1) {
+      throw new IllegalStateException("INVALID_STATE");
+    }
+    tvState.setCurrentChannel(ch - 1);
+  }
+
 
 }

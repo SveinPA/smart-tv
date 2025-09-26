@@ -19,7 +19,7 @@
 - [x] `tv-server/adapter`: map kommandoer → `SmartTv` og bygg svar  
 - [x] `remote-client/transport`: enkel TCP-klient (koble til host:port)  
 - [x] `remote-client/ui`: minimal CLI (send kommando, vis svar)  
-- [ ] Manuell test: ON/OFF/STATUS/CHANNELS/GET/SET fungerer ende-til-ende  
+- [x] Manuell test: ON/OFF/STATUS/CHANNELS/GET/SET fungerer ende-til-ende  
 - [ ] Commit + tag `v0.1.0-simple`
 
 ## Uke 39 — Del 2: Refaktorering & enhetstester

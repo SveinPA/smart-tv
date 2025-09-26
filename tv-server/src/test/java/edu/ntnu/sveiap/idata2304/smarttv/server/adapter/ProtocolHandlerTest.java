@@ -110,5 +110,24 @@ class ProtocolHandlerTest {
     assertEquals("ERR 400 BAD_COMMAND\r\n", handler.handleLine("SET abc"));
     assertEquals("ERR 400 BAD_COMMAND\r\n", handler.handleLine("SET"));
   }
+
+  /**
+   * Test UP and DOWN commands with proper error mapping.
+   */
+  @Test
+  void upDownMapping() {
+    SmartTv tv = new SmartTv(2);
+    ProtocolHandler handler = new ProtocolHandler(tv);
+
+    // OFF -> 401
+    assertEquals("ERR 401 TV_OFF\r\n", handler.handleLine("UP"));
+    assertEquals("ERR 401 TV_OFF\r\n", handler.handleLine("DOWN"));
+
+    handler.handleLine("ON"); // Tv is now ON, channel 1
+    assertEquals("ERR 409 INVALID_STATE\r\n", handler.handleLine("DOWN")); // Already at min
+    assertEquals("OK CH=2\r\n", handler.handleLine("UP")); // 1 -> 2
+    assertEquals("ERR 409 INVALID_STATE\r\n", handler.handleLine("UP")); // Already at max
+    assertEquals("OK CH=1\r\n", handler.handleLine("DOWN")); // 2 -> 1
+  }
   
 }

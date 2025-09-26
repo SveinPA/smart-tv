@@ -74,6 +74,28 @@ public class ProtocolHandler {
             }
           }
 
+          case UP -> {
+            try {
+              tv.channelUp();
+              yield Codec.okChannel(tv.getChannel());
+            } catch (IllegalStateException ex) {
+              yield "TV_OFF".equals(ex.getMessage())
+                  ? Codec.errTvOff()
+                  : Codec.errInvalidState();
+            }
+          }
+
+          case DOWN -> {
+            try {
+              tv.channelDown();
+              yield Codec.okChannel(tv.getChannel());
+            } catch (IllegalStateException ex) {
+              yield "TV_OFF".equals(ex.getMessage())
+                  ? Codec.errTvOff()
+                  : Codec.errInvalidState();
+            }
+          }
+
           default -> Codec.errBadCommand();
         };
         
