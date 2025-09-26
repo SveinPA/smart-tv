@@ -257,3 +257,73 @@ Manual smoke (README)
 - EVT: Server-initiated event line (e.g., `EVT CHANNEL <n>`).
 - SUB/UNSUB: Subscribe/unsubscribe to events on the current connection.
 - Adapter: Glue translating protocol messages to logic calls (and back).
+
+---
+
+## 19) Klassediagram (oversikt)
+
+PlantUML-kilde (logiske klasser og relasjoner). Dette er en lettvektsmodell – detaljer som alle metodesignaturer i `Codec` er forkortet for lesbarhet.
+
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+legend left
+  Relationship typer:
+  *--  Komposisjon (eier livssyklus)
+  -->  Direkte avhengighet (felt / sterk bruk)
+  ..>  Løs kobling / bruker statiske metoder
+endlegend
+
+package common {
+  class TvState {
+    - boolean on
+    - int channels
+    - int currentChannel
+    + isOn()
+    + getChannelRange()
+    + getCurrentChannel()
+    + setOn(boolean)
+    + setCurrentChannel(int)
+  }
+  class SmartTv {
+    - TvState tvState
+    + turnOn()
+    + turnOff()
+    + isOn()
+    + getNumberOfChannels()
+    + getChannel()
+    + setChannel(int)
+    + channelUp()
+    + channelDown()
+  }
+  class Codec {
+    {static} parseRequest(line)
+    {static} ok()/okStatus()/okChannels()/okChannel()/okPong()
+    {static} errBadCommand()/errTvOff()/errOutOfRange()/errInvalidState()/errServerError()
+  }
+  enum Command
+  class Request {
+    + command : Command
+    + arg : Integer
+  }
+}
+package "tv-server" {
+  class ProtocolHandler {
+    - SmartTv tv
+    + handleLine(String)
+  }
+}
+
+SmartTv *-- "1" TvState : eier
+ProtocolHandler --> "1" SmartTv : delegasjon
+ProtocolHandler ..> Codec : formattering/parsing
+Codec ..> Command : referanse
+Codec ..> Request : produserer
+Request --> Command : felt
+@enduml
+```
+
+Generering: bruk PlantUML-plugin i IDE, eller kjør en ekstern PlantUML-renderer.
+

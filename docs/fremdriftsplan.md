@@ -23,13 +23,13 @@
 - [x] Commit + tag `v0.1.0-simple`
 
 ## Uke 39 — Del 2: Refaktorering & enhetstester
-- [ ] Sjekk lagdeling: `logic` uavhengig av `protocol`/`transport`  
-- [ ] Gjør meldinger/kommandoer lett å endre (sentraliser i `protocol`)  
-- [ ] **Tester (common/logic):** minst 3 (TV OFF default, valid/invalid channel, state rules)  
-- [ ] **Tester (protocol/codec):** parsing av gyldige/ugyldige meldinger, feilkoder  
-- [ ] **Tester (server/adapter):** kommando → stateendring (uten ekte sockets hvis mulig)  
-- [ ] Oppdater `architecture.md` med klassediagram (enkelt)  
-- [ ] Commit + tag `v0.2.0-refactor-tests`
+- [x] Sjekk lagdeling: `logic` uavhengig av `protocol`/`transport` 
+- [x] Gjør meldinger/kommandoer lett å endre (sentraliser i `protocol`)  
+- [x] **Tester (common/logic):** minst 3 (TV OFF default, valid/invalid channel, state rules) 
+- [x] **Tester (protocol/codec):** parsing av gyldige/ugyldige meldinger, feilkoder 
+- [x] **Tester (server/adapter):** kommando → stateendring (uten ekte sockets hvis mulig) 
+- [x] Oppdater `architecture.md` med klassediagram (enkelt)  
+- [ ] Commit + tag `v0.2.0-refactor-tests`  
 
 ## Uke 40 — Robusthet & feilhandtering
 - [ ] Normaliser feilkoder (`400/401/404/409/500`) i server-svar  
