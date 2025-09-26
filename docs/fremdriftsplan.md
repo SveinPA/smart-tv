@@ -20,7 +20,7 @@
 - [x] `remote-client/transport`: enkel TCP-klient (koble til host:port)  
 - [x] `remote-client/ui`: minimal CLI (send kommando, vis svar)  
 - [x] Manuell test: ON/OFF/STATUS/CHANNELS/GET/SET fungerer ende-til-ende  
-- [ ] Commit + tag `v0.1.0-simple`
+- [x] Commit + tag `v0.1.0-simple`
 
 ## Uke 39 — Del 2: Refaktorering & enhetstester
 - [ ] Sjekk lagdeling: `logic` uavhengig av `protocol`/`transport`  
