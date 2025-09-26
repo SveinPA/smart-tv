@@ -15,10 +15,14 @@ mvn -q -DskipITs clean install
 
 ## 1) Start the TV server (Terminal A)
 # Recommended
+```
 mvn -q -f tv-server/pom.xml exec:java "-Dexec.args=--port 1238"
+```
 
 # If PowerShell ever mangles the args, use stop-parsing:
+```
 mvn --% -q -f tv-server/pom.xml exec:java -Dexec.args=--port 1238
+```
 
 # This should appear in the teminal
 ```
