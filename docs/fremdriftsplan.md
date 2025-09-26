@@ -8,7 +8,7 @@
 - [x] **Docs:** opprett `docs/architecture.md` og `docs/protocol.md` (malene er på plass)  
 - [x] Placeholder `main`-klasser (server/klient) kjører via Maven/VS Code  
 - [x] `mvn validate` og “Reload Maven Projects” i VS Code uten feil  
-- [X] Første commit + tag `v0.0.1-init`
+- [x] Første commit + tag `v0.0.1-init`
 
 ## Uke 38 — Del 1: Enkel Smart-TV + klient
 - [x] Spesifiser **protokoll v1** i `docs/protocol.md` (kommandoer, svar, feilkoder, eksempler)  
@@ -16,8 +16,8 @@
 - [x] `common/logic`: `SmartTv` med `turnOn/turnOff/getNumberOfChannels/getChannel/setChannel`  
 - [x] `common/protocol`: `Command`, `Message`, `Codec` (linjebasert UTF-8)  
 - [x] `tv-server/transport`: enkel TCP-server (lytt på port 1238, håndter én klient)  
-- [X] `tv-server/adapter`: map kommandoer → `SmartTv` og bygg svar  
-- [ ] `remote-client/transport`: enkel TCP-klient (koble til host:port)  
+- [x] `tv-server/adapter`: map kommandoer → `SmartTv` og bygg svar  
+- [x] `remote-client/transport`: enkel TCP-klient (koble til host:port)  
 - [ ] `remote-client/ui`: minimal CLI (send kommando, vis svar)  
 - [ ] Manuell test: ON/OFF/STATUS/CHANNELS/GET/SET fungerer ende-til-ende  
 - [ ] Commit + tag `v0.1.0-simple`
