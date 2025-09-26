@@ -65,4 +65,51 @@ class CodecTest {
     assertEquals("OK OFF\r\n", Codec.okStatus(false));
   }
   
+  // Additional coverage: other OK helpers
+  @Test
+  void formatsOtherOkResponses() {
+    assertEquals("OK\r\n", Codec.ok());
+    assertEquals("OK C=8\r\n", Codec.okChannels(8));
+    assertEquals("OK CH=3\r\n", Codec.okChannel(3));
+    assertEquals("OK PONG\r\n", Codec.okPong());
+  }
+
+  // Additional coverage: error helpers
+  @Test
+  void formatsErrorResponses() {
+    assertEquals("ERR 400 BAD_COMMAND\r\n", Codec.errBadCommand());
+    assertEquals("ERR 401 TV_OFF\r\n", Codec.errTvOff());
+    assertEquals("ERR 404 OUT_OF_RANGE\r\n", Codec.errOutOfRange());
+    assertEquals("ERR 409 INVALID_STATE\r\n", Codec.errInvalidState());
+    assertEquals("ERR 500 SERVER_ERROR\r\n", Codec.errServerError());
+  }
+
+  // Parsing of other no-arg commands
+  @Test
+  void parsesOtherNoArgCommands() {
+    assertEquals(Command.GET, Codec.parseRequest("GET").command());
+    assertEquals(Command.CHANNELS, Codec.parseRequest("CHANNELS").command());
+    assertEquals(Command.UP, Codec.parseRequest("UP").command());
+    assertEquals(Command.DOWN, Codec.parseRequest("DOWN").command());
+    assertEquals(Command.PING, Codec.parseRequest("PING").command());
+    assertEquals(Command.SUB, Codec.parseRequest("SUB").command());
+    assertEquals(Command.UNSUB, Codec.parseRequest("UNSUB").command());
+  }
+
+  // Trimming and multiple spaces are normalized
+  @Test
+  void trimsAndCollapsesSpaces() {
+    Request r = Codec.parseRequest("   SET    9   ");
+    assertEquals(Command.SET, r.command());
+    assertEquals(9, r.arg());
+  }
+
+  // Reject line over max length (256)
+  @Test
+  void rejectsTooLongLine() {
+    String longLine = "SET " + "9".repeat(260); // definitely > 256 chars total
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest(longLine));
+    assertEquals("BAD_COMMAND", ex.getMessage());
+  }
+  
 }

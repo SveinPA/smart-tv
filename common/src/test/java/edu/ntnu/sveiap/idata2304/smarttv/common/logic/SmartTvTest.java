@@ -26,7 +26,7 @@ class SmartTvTest {
   @Test
   void usingChannelWhileOffIsIllegal() {
     SmartTv smartTv = new SmartTv(10);
-    assertThrows(IllegalStateException.class, () -> smartTv.getChannel());
+  assertThrows(IllegalStateException.class, smartTv::getChannel);
     assertThrows(IllegalStateException.class, () -> smartTv.setChannel(1));
   }
 
@@ -68,5 +68,28 @@ class SmartTvTest {
 
     tv.channelDown(); // 2
     assertEquals(2, tv.getChannel());
+  }
+
+  /**
+   * Idempotent on/off and getNumberOfChannels while off should throw.
+   */
+  @Test
+  void idempotentPowerAndChannelCountGuard() {
+    SmartTv tv = new SmartTv(4);
+    // getNumberOfChannels while OFF
+  IllegalStateException ex1 = assertThrows(IllegalStateException.class, tv::getNumberOfChannels);
+  // ensure reason is TV_OFF
+  assertEquals("TV_OFF", ex1.getMessage());
+    // turnOn twice
+    tv.turnOn();
+    tv.turnOn();
+    // now channel count accessible
+    assertEquals(4, tv.getNumberOfChannels());
+    // turnOff twice
+    tv.turnOff();
+    tv.turnOff();
+    // again guarded
+    IllegalStateException ex2 = assertThrows(IllegalStateException.class, tv::getNumberOfChannels);
+    assertEquals("TV_OFF", ex2.getMessage());
   }
 }

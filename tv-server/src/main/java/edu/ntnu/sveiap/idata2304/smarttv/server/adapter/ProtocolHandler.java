@@ -26,89 +26,104 @@ public class ProtocolHandler {
     this.tv = tv;
   }
 
+  /**
+   * Handles a single raw input line from a client connection.
+   * Parsing + dispatch + error mapping.
+   * @param line raw line (may be null)
+   * @return protocol response line (always CRLF terminated via Codec)
+   */
   public String handleLine(String line) {
     try {
-
-        Request req = Codec.parseRequest(line);
-        Command cmd = req.command();
-
-        return switch (cmd) {
-          case STATUS -> Codec.okStatus(tv.isOn());
-          case ON -> {
-            tv.turnOn();
-            yield Codec.ok();
-          }
-
-          case OFF -> {
-            tv.turnOff();
-            yield Codec.ok();
-          }
-
-          case CHANNELS -> {
-            try {
-              int c = tv.getNumberOfChannels();
-              yield Codec.okChannels(c);
-            } catch (IllegalStateException tvOff) {
-              yield Codec.errTvOff();
-            }
-          }
-
-          case GET -> {
-            try {
-              int ch = tv.getChannel();
-              yield Codec.okChannel(ch);
-            } catch (IllegalStateException tvOff) {
-              yield Codec.errTvOff();
-            }
-          }
-
-          case SET -> {
-            Integer n = req.arg();
-            try {
-              tv.setChannel(n);
-              yield Codec.okChannel(tv.getChannel());
-            } catch (IllegalStateException tvOff) {
-              yield Codec.errTvOff();
-            } catch (IllegalArgumentException outOfRange) {
-              yield Codec.errOutOfRange();
-            }
-          }
-
-          case UP -> {
-            try {
-              tv.channelUp();
-              yield Codec.okChannel(tv.getChannel());
-            } catch (IllegalStateException ex) {
-              yield "TV_OFF".equals(ex.getMessage())
-                  ? Codec.errTvOff()
-                  : Codec.errInvalidState();
-            }
-          }
-
-          case DOWN -> {
-            try {
-              tv.channelDown();
-              yield Codec.okChannel(tv.getChannel());
-            } catch (IllegalStateException ex) {
-              yield "TV_OFF".equals(ex.getMessage())
-                  ? Codec.errTvOff()
-                  : Codec.errInvalidState();
-            }
-          }
-
-          default -> Codec.errBadCommand();
-        };
-        
-      } catch (IllegalArgumentException badSyntax) {
-
-      // Examples: Uknown command, wrong number of args, bad arg format
+      Request req = Codec.parseRequest(line);
+      Command cmd = req.command();
+      return switch (cmd) {
+        case STATUS -> handleStatus();
+        case ON -> handleOn();
+        case OFF -> handleOff();
+        case CHANNELS -> handleChannels();
+        case GET -> handleGet();
+        case SET -> handleSet(req.arg());
+        case UP -> handleUp();
+        case DOWN -> handleDown();
+        // SUB/UNSUB/PING not implemented yet at adapter level; treat as BAD_COMMAND until added
+        default -> Codec.errBadCommand();
+      };
+    } catch (IllegalArgumentException badSyntax) {
+      // Unknown command token / wrong arg count / invalid arg / null line
       return Codec.errBadCommand();
-
-      } catch (Exception unexpected) {
-
-      // Catch-all for unexpected errors
+    } catch (Exception unexpected) {
+      // Defensive catch-all
       return Codec.errServerError();
-
     }
+  }
+
+  
+
+  private String handleStatus() {
+    return Codec.okStatus(tv.isOn());
+  }
+
+  private String handleOn() {
+    tv.turnOn();
+    return Codec.ok();
+  }
+
+  private String handleOff() {
+    tv.turnOff();
+    return Codec.ok();
+  }
+
+  private String handleChannels() {
+    try {
+      return Codec.okChannels(tv.getNumberOfChannels());
+    } catch (IllegalStateException ex) {
+      return Codec.errTvOff();
+    }
+  }
+
+  private String handleGet() {
+    try {
+      return Codec.okChannel(tv.getChannel());
+    } catch (IllegalStateException ex) {
+      return Codec.errTvOff();
+    }
+  }
+
+  private String handleSet(Integer n) {
+    try {
+      tv.setChannel(n);
+      return Codec.okChannel(tv.getChannel());
+    } catch (IllegalStateException ex) { // TV off
+      return Codec.errTvOff();
+    } catch (IllegalArgumentException outOfRange) { // channel bounds
+      return Codec.errOutOfRange();
+    }
+  }
+
+  private String handleUp() {
+    try {
+      tv.channelUp();
+      return Codec.okChannel(tv.getChannel());
+    } catch (IllegalStateException ex) {
+      return mapIllegalState(ex);
+    }
+  }
+
+  private String handleDown() {
+    try {
+      tv.channelDown();
+      return Codec.okChannel(tv.getChannel());
+    } catch (IllegalStateException ex) {
+      return mapIllegalState(ex);
+    }
+  }
+
+  /**
+   * Maps IllegalStateException messages produced by SmartTv to protocol errors.
+   * SmartTv.ensureOn() throws IllegalStateException("TV_OFF"). channelUp/Down throw
+   * IllegalStateException("INVALID_STATE") for boundary conditions.
+   */
+  private String mapIllegalState(IllegalStateException ex) {
+    return "TV_OFF".equals(ex.getMessage()) ? Codec.errTvOff() : Codec.errInvalidState();
   }
 }
