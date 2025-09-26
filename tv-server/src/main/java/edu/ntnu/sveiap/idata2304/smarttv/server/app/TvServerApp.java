@@ -4,6 +4,11 @@ import edu.ntnu.sveiap.idata2304.smarttv.common.logic.SmartTv;
 import edu.ntnu.sveiap.idata2304.smarttv.server.adapter.ProtocolHandler;
 import edu.ntnu.sveiap.idata2304.smarttv.server.transport.TcpServer;
 
+/**
+ * Main application class for the TV server.
+ * Starts a TCP server on the specified port (default 1238).
+ * Accepts an optional command-line argument to specify a different port.
+ */
 public final class TvServerApp {
     private TvServerApp() {}
 
