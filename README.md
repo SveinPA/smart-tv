@@ -31,7 +31,9 @@ mvn --% -q -f tv-server/pom.xml exec:java -Dexec.args=--port 1238
 ```
 
 ## Start remote client (Terminal B)
+```
 mvn -q -f remote-client/pom.xml exec:java "-Dexec.args=127.0.0.1 1238"
+```
 
 # This should appear in the terminal
 ```
