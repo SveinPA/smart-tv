@@ -28,8 +28,8 @@ git push --tags
 ```text
 git checkout develop
 git merge --ff-only main
-mvn -q versions:set -DnewVersion=0.3.0-SNAPSHOT -DprocessAllModules -DgenerateBackupPoms=false
-git commit -am "Bump to 0.3.0-SNAPSHOT"
+mvn -q versions:set "-DnewVersion=0.2.0-SNAPSHOT" -DprocessAllModules -DgenerateBackupPoms=false
+git commit -am "Bump to 0.2.0-SNAPSHOT"
 git push
 ```
 # Regret version change
