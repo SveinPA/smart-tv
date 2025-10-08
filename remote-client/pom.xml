@@ -5,7 +5,7 @@
   <parent>
     <groupId>edu.ntnu.sveiap</groupId>
     <artifactId>smart-tv</artifactId>
-    <version>0.3.0-robustness</version>
+    <version>0.4.0-client-polish-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
