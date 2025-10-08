@@ -37,8 +37,8 @@
 - [x] Input-validering og grenser (maks linjelengde, kanalgrenser)  
 - [x] Logging: INFO/WARN/ERROR på server
 - [x] PING
-- [ ] Oppdater protokoll-eksempler i `docs/protocol.md`  
-- [ ] Commit + tag `v0.3.0-robustness`
+- [x] Oppdater protokoll-eksempler i `docs/protocol.md`  
+- [x] Commit + tag `v0.3.0-robustness`
 
 ## Uke 41 — Klientopplevelse & kvalitet
 - [ ] Forbedre CLI (hjelpetekst, statuslinje for aktiv kanal)  
