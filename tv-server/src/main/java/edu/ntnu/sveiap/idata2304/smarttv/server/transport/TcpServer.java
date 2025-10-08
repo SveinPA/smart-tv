@@ -4,10 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Codec;
+import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Limits;
 import edu.ntnu.sveiap.idata2304.smarttv.server.adapter.ProtocolHandler;
 
 /**
@@ -18,6 +22,7 @@ import edu.ntnu.sveiap.idata2304.smarttv.server.adapter.ProtocolHandler;
  * Currently handles one client at a time.
  */
 public class TcpServer {
+  private static final Logger LOG = Logger.getLogger(TcpServer.class.getName());
 
   private final int port;
   private final ProtocolHandler handler;
@@ -39,16 +44,16 @@ public class TcpServer {
    */
   public void start() throws IOException {
     try (ServerSocket server = new ServerSocket(port)) {
-      System.out.println("[TcpServer] Listening on port " + port + "...");
+      LOG.log(Level.INFO, "Listening on port " + port + "...");
     
       // TODO: refactor to handle more than one client
       while (true) {
         try (Socket socket = server.accept()) {
-          System.out.println("[TcpServer] Client connected: " + socket.getRemoteSocketAddress());
+          LOG.log(Level.INFO, "Client connected: {0}", socket.getRemoteSocketAddress());
           serve(socket);
-          System.out.println("[TcpServer] Client disconnected.");
+          LOG.log(Level.INFO, "Client disconnected.");
         } catch (IOException e) {
-          System.err.println("[TcpServer] I/O error: " + e.getMessage());
+          LOG.log(Level.WARNING, "Client I/O error: {0}" + e.getMessage(), e);
         }
       }
     }
@@ -68,10 +73,32 @@ public class TcpServer {
     try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         OutputStream out = socket.getOutputStream()) {
 
-          String line;
-          while ((line = in.readLine()) != null) {
+          String raw;
+          while ((raw = in.readLine()) != null) {
 
-            String reply = handler.handleLine(line);
+            String line = raw.trim();
+            if (line.isEmpty()) {
+              continue;
+            }
+
+            if (line.length() > Limits.MAX_LINE_LENGTH) {
+              out.write(Codec.errLineTooLong().getBytes(StandardCharsets.UTF_8));
+              out.flush();
+              continue;
+            }
+
+            final String reply;
+            try {
+              reply = handler.handleLine(line);
+            } catch (Exception e) {
+              LOG.log(Level.SEVERE, "Unexpected handler error: " + e.getMessage(), e);
+
+              // In case of unexpected error, send a generic server error response.
+              byte[] b = Codec.errServerError().getBytes(StandardCharsets.UTF_8);
+              out.write(b);
+              out.flush();
+              continue;
+            }
 
             out.write(reply.getBytes(StandardCharsets.UTF_8));
             out.flush();

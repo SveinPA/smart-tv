@@ -1,5 +1,7 @@
 package edu.ntnu.sveiap.idata2304.smarttv.common.protocol;
 
+import java.util.Locale;
+
 /**
  * Codec for encoding and decoding requests and responses in the Smart TV protocol.
  */
@@ -10,7 +12,6 @@ public final class Codec {
   }
 
   private static final String CRLF = "\r\n";
-  private static final int MAX_LINE_LENGTH = 256;
 
   /**
    * Parses a line of text into a Request object.
@@ -21,38 +22,37 @@ public final class Codec {
    * @throws IllegalArgumentException if the line is invalid or cannot be parsed.
    */
   public static Request parseRequest(String line) {
-    if (line == null) throw new IllegalArgumentException("BAD_COMMAND");
-    if (line.length() > MAX_LINE_LENGTH) throw new IllegalArgumentException("BAD_COMMAND");
-
+    if (line == null) throw new IllegalArgumentException("EMPTY_LINE");
+    
     String trimmed = line.trim();
-    if (trimmed.isEmpty()) throw new IllegalArgumentException("BAD_COMMAND");
+    if (trimmed.isEmpty()) throw new IllegalArgumentException("EMPTY_LINE");
+    if (trimmed.length() > Limits.MAX_LINE_LENGTH) throw new IllegalArgumentException("LINE_TOO_LONG");
 
     String[] parts = trimmed.split("\\s+");
+    String token = parts[0].toUpperCase(Locale.ROOT);
+
     Command cmd;
     try {
-      cmd = Command.fromToken(parts[0]);
+      cmd = Command.fromToken(token);
     } catch (Exception e) {
-      throw new IllegalArgumentException("BAD_COMMAND");
+      throw new IllegalArgumentException("UNKNOWN_CMD");
     }
 
-    boolean needsArg = (cmd == Command.SET);
-    boolean forbidsArg = (cmd == Command.STATUS || cmd == Command.ON || cmd == Command.OFF
-                       || cmd == Command.GET || cmd == Command.CHANNELS
-                       || cmd == Command.UP || cmd == Command.DOWN
-                       || cmd == Command.SUB || cmd == Command.UNSUB
-                       || cmd == Command.PING);
-    
     Integer arg = null;
 
-    if (needsArg) {
-      if (parts.length != 2) throw new IllegalArgumentException("BAD_COMMAND");
-      try {
-        arg = Integer.valueOf(parts[1]);
-      } catch (NumberFormatException nfe) {
-        throw new IllegalArgumentException("BAD_COMMAND");
+    switch (cmd) {
+      case SET -> {
+        if (parts.length != 2) throw new IllegalArgumentException("ARG_COUNT");
+        try {
+          arg = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException nfe) {
+          throw new IllegalArgumentException("ARG_NOT_INT");
+        }
       }
-    } else if (forbidsArg) {
-        if (parts.length != 1) throw new IllegalArgumentException("BAD_COMMAND");
+      default -> {
+        // All current non-SET commands forbid extra args.
+        if (parts.length != 1) throw new IllegalArgumentException("EXTRA_ARGS");
+      }
     }
 
     return new Request(cmd, arg);
@@ -120,6 +120,15 @@ public final class Codec {
   }
 
   /**
+   * Encodes a line too long error response.
+   * 
+   * @return The encoded error response string.
+   */
+  public static String errLineTooLong() {
+    return "ERR 400 LINE_TOO_LONG" + CRLF;
+  }
+
+  /**
    * Encodes a TV off error response.
    * 
    * @return The encoded error response string.
@@ -184,5 +193,5 @@ public final class Codec {
   public static String evtPowerOff() {
     return "EVT POWER OFF" + CRLF;
   }
-  
+
 }

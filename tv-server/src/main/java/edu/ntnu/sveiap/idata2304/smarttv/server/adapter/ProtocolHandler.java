@@ -12,7 +12,7 @@ import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Request;
  * - Calls {@link SmartTv} to execute commands
  * - Formats responses with {@link Codec}
  */
-public class ProtocolHandler {
+public final class ProtocolHandler {
   private final SmartTv tv;
   
   /**
@@ -33,8 +33,14 @@ public class ProtocolHandler {
    * @return protocol response line (always CRLF terminated via Codec)
    */
   public String handleLine(String line) {
+    final Request req;
     try {
-      Request req = Codec.parseRequest(line);
+      req = Codec.parseRequest(line);
+      } catch (IllegalArgumentException badSyntax) {
+      // Unknown command token / wrong arg count / invalid arg / null line
+      return Codec.errBadCommand();
+      }
+
       Command cmd = req.command();
       return switch (cmd) {
         case STATUS -> handleStatus();
@@ -45,16 +51,10 @@ public class ProtocolHandler {
         case SET -> handleSet(req.arg());
         case UP -> handleUp();
         case DOWN -> handleDown();
+        case PING -> handlePing();
         // SUB/UNSUB/PING not implemented yet at adapter level; treat as BAD_COMMAND until added
         default -> Codec.errBadCommand();
       };
-    } catch (IllegalArgumentException badSyntax) {
-      // Unknown command token / wrong arg count / invalid arg / null line
-      return Codec.errBadCommand();
-    } catch (Exception unexpected) {
-      // Defensive catch-all
-      return Codec.errServerError();
-    }
   }
 
   
@@ -116,6 +116,10 @@ public class ProtocolHandler {
     } catch (IllegalStateException ex) {
       return mapIllegalState(ex);
     }
+  }
+
+  private String handlePing() {
+    return Codec.ok();
   }
 
   /**

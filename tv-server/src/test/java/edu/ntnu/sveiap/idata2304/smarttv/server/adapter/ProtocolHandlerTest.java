@@ -129,5 +129,25 @@ class ProtocolHandlerTest {
     assertEquals("ERR 409 INVALID_STATE\r\n", handler.handleLine("UP")); // Already at max
     assertEquals("OK CH=1\r\n", handler.handleLine("DOWN")); // 2 -> 1
   }
+
+  /**
+   * Test PING command always returns OK regardless of TV state.
+   */
+  @Test
+  void pingAlwaysReturnsOk_noMatterTheState() {
+    ProtocolHandler h = new ProtocolHandler(new SmartTv(3));
+    assertEquals("OK\r\n", h.handleLine("PING")); // off
+    h.handleLine("ON");
+    assertEquals("OK\r\n", h.handleLine("PING")); // on
+  }
+
+  /**
+   * Test that PING with an argument returns 400 BAD_COMMAND.
+   */
+  @Test
+  void pingWithArgIsBadCommand() {
+    ProtocolHandler h = new ProtocolHandler(new SmartTv(3));
+    assertEquals("ERR 400 BAD_COMMAND\r\n", h.handleLine("PING 1"));
+  }
   
 }
