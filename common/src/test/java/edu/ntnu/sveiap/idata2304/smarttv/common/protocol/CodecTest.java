@@ -107,9 +107,31 @@ class CodecTest {
   // Reject line over max length (256)
   @Test
   void rejectsTooLongLine() {
-    String longLine = "SET " + "9".repeat(260); // definitely > 256 chars total
+    String longLine = "SET " + "9".repeat(Limits.MAX_LINE_LENGTH + 1); // definitely > 256 chars total
     IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest(longLine));
-    assertEquals("BAD_COMMAND", ex.getMessage());
+    assertEquals("LINE_TOO_LONG", ex.getMessage());
+  }
+
+  // Test that parsing is case-insensitive and trims input
+  @Test
+  void trimsAndIsCaseInsensitive() {
+    Request r1 = Codec.parseRequest("    status    ");
+    assertEquals(Command.STATUS, r1.command());
+
+    Request r2 = Codec.parseRequest("SeT   5");
+    assertEquals(Command.SET, r2.command());
+    assertEquals(5, r2.arg());
+  }
+
+  // Test that various error conditions produce clear exceptions
+  @Test
+  void errorsHaveClearReasons() {
+    assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest(null)); // NULL_LINE
+    assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest("")); // EMPTY_LINE
+    assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest("Test")); // UNKNOWN_CMD
+    assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest("SET")); // ARG_COUNT
+    assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest("SET test")); // ARG_NOT_INT
+    assertThrows(IllegalArgumentException.class, () -> Codec.parseRequest("STATUS test")); // EXTRA_ARGS
   }
   
 }

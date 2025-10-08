@@ -133,6 +133,25 @@ S: OK CH=5
 S: EVT CHANNEL 5
 ```
 
+### PING
+```
+C: PING
+S: OK
+```
+
+### Whitespace and too-long handling
+```
+C: status
+S: OK OFF
+
+C: SET 3
+S: OK CH=3
+
+C:
+(empty line ignored)
+C: XXXX.. (257 chars)
+S: ERR 400 LINE_TOO_LONG
+
 ### Errors
 ```
 C: GET
