@@ -29,13 +29,14 @@
 - [x] **Tester (protocol/codec):** parsing av gyldige/ugyldige meldinger, feilkoder 
 - [x] **Tester (server/adapter):** kommando → stateendring (uten ekte sockets hvis mulig) 
 - [x] Oppdater `architecture.md` med klassediagram (enkelt)  
-- [ ] Commit + tag `v0.2.0-refactor-tests`  
+- [x] Commit + tag `v0.2.0-refactor-tests`  
 
 ## Uke 40 — Robusthet & feilhandtering
-- [ ] Normaliser feilkoder (`400/401/404/409/500`) i server-svar  
-- [ ] Trim/ignorer ekstra whitespace, håndter tomme linjer  
-- [ ] Input-validering og grenser (maks linjelengde, kanalgrenser)  
-- [ ] Logging: INFO/WARN/ERROR på server  
+- [x] Normaliser feilkoder (`400/401/404/409/500`) i server-svar  
+- [x] Trim/ignorer ekstra whitespace, håndter tomme linjer  
+- [x] Input-validering og grenser (maks linjelengde, kanalgrenser)  
+- [x] Logging: INFO/WARN/ERROR på server
+- [x] PING
 - [ ] Oppdater protokoll-eksempler i `docs/protocol.md`  
 - [ ] Commit + tag `v0.3.0-robustness`
 
