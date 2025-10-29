@@ -4,7 +4,7 @@
 
   <groupId>edu.ntnu.sveiap</groupId>
   <artifactId>smart-tv</artifactId>
-  <version>0.4.0-client-polish-SNAPSHOT</version>
+  <version>0.8.0-async-broadcast-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Smart TV (IDATA2304)</name>
   <description>Socket programming exercise — Smart TV server &amp; remote client</description>
