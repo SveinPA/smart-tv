@@ -34,9 +34,13 @@ public final class CliUi {
               
         printWelcome();
         showInitialStatus(tcp);
+        
 
+        startMessageListener(tcp);
+
+        // Main loop
         while (true) {
-          System.out.println("smarttv> ");
+          System.out.print("smarttv> ");
           String line = console.readLine();
           if (line == null) break;
           line = line.trim();
@@ -50,12 +54,7 @@ public final class CliUi {
           }
 
           try {
-            String reply = tcp.sendAndReceive(line);
-            if (reply == null) {
-              System.out.println("(connection closed by server)");
-              break;
-            }
-            System.out.println(reply);
+            tcp.send(line);
           } catch (IOException io) {
             System.out.println("[Client] I/O error: " + io.getMessage());
             break;
@@ -66,6 +65,38 @@ public final class CliUi {
     }
 
     System.out.println("[Client] Exiting ...");
+  }
+
+  /**
+   * Starts a background daemon thread that continuously reads messages from the server
+   * and prints them to the console. Handles both sunchronous responses (OK/ERR) and
+   * asynchronous events (EVT)
+   */
+  private static void startMessageListener(TcpClient tcp) {
+    Thread listener = new Thread(() -> {
+      try {
+        while (true) {
+          String message = tcp.receiveLine();
+          if (message == null) {
+            System.out.println("\n[Server disconnected]");
+            break;
+          }
+          System.out.println(message);
+          System.out.print("smarttv> ");
+        }
+      } catch (IOException e) {
+        System.out.println("\n[Listener error: " + e.getMessage() + "]");
+      }
+    }, "ServerMessageListener");
+
+    listener.setDaemon(true);
+    listener.start();
+
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   /**
