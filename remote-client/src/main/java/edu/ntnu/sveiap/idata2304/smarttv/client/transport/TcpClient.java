@@ -59,7 +59,7 @@ public final class TcpClient implements Closeable {
    * @param line The line to send. If null, an empty line is sent.
    * @return The line received from the server, without the CRLF.
    */
-  public String sendAndRecevie(String line) throws IOException {
+  public String sendAndReceive(String line) throws IOException {
     send(line);
     return receiveLine();
   }

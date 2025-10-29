@@ -33,6 +33,7 @@ public final class CliUi {
             new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8))) {
               
         printWelcome();
+        showInitialStatus(tcp);
 
         while (true) {
           System.out.println("smarttv> ");
@@ -49,7 +50,7 @@ public final class CliUi {
           }
 
           try {
-            String reply = tcp.sendAndRecevie(line);
+            String reply = tcp.sendAndReceive(line);
             if (reply == null) {
               System.out.println("(connection closed by server)");
               break;
@@ -90,6 +91,37 @@ public final class CliUi {
             Local commands:
               help, exit
             """);
+  }
+
+  /**
+   * Queries the TV status on startup and displays current state to the user.  
+   * If TV is ON, also fetches and displays the current channel.
+   */
+  private static void showInitialStatus(TcpClient tcp) {
+    try {
+      // Send STATUS command to check if TV is on or off
+      String statusReply = tcp.sendAndReceive("STATUS");
+
+      if (statusReply == null) {
+        System.out.println("[Client] No response from server");
+        return;
+      }
+
+      System.out.println("Current TV status: " + statusReply);
+
+      // If TV is ON, also get current channel
+      if (statusReply.contains("ON")) {
+        String channelReply = tcp.sendAndReceive("GET");
+        if (channelReply != null) {
+          System.out.println("Current channel: " + channelReply);
+        }
+      }
+
+      System.out.println(); // Blank line to make it easier to read
+
+    } catch (IOException e) {
+      System.out.println("[Client] Could not fetch initial status: " + e.getMessage());
+    }
   }
 
 }
