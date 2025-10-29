@@ -5,7 +5,7 @@
   <parent>
     <groupId>edu.ntnu.sveiap</groupId>
     <artifactId>smart-tv</artifactId>
-    <version>0.8.0-async-broadcast-SNAPSHOT</version>
+    <version>0.8.0-async-broadcast-events</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
