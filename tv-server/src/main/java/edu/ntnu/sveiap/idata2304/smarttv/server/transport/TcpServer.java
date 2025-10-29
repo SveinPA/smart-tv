@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.ServerSocket;
@@ -26,6 +29,7 @@ public class TcpServer {
 
   private final int port;
   private final ProtocolHandler handler;
+  private final ExecutorService executorService;
 
   /**
    * Creates a TCP server that listens on the specified port and uses the given ProtocolHandler
@@ -34,11 +38,12 @@ public class TcpServer {
   public TcpServer(int port, ProtocolHandler handler) {
     this.port = port;
     this.handler = handler;
+    this.executorService = Executors.newCachedThreadPool();
   }
 
   /**
    * Starts the TCP server. This method blocks and runs indefinitely,
-   * accepting and handling one client at a time.
+   * accepting and handlling multiple clients concurrently.
    *
    * @throws IOException if an I/O error occurs when opening the socket or during communication.
    */
@@ -46,15 +51,25 @@ public class TcpServer {
     try (ServerSocket server = new ServerSocket(port)) {
       LOG.log(Level.INFO, "Listening on port " + port + "...");
     
-      // TODO: refactor to handle more than one client
       while (true) {
-        try (Socket socket = server.accept()) {
-          LOG.log(Level.INFO, "Client connected: {0}", socket.getRemoteSocketAddress());
-          serve(socket);
-          LOG.log(Level.INFO, "Client disconnected.");
-        } catch (IOException e) {
-          LOG.log(Level.WARNING, "Client I/O error: {0}" + e.getMessage(), e);
-        }
+        Socket socket = server.accept();
+        LOG.log(Level.INFO, "Client connected: {0}", socket.getRemoteSocketAddress());
+
+        // Spawn a new thread to handle client
+        executorService.submit(() -> {
+          try {
+            serve(socket);
+          } catch (IOException e) {
+            LOG.log(Level.WARNING, "Client I/O error {0}", e.getMessage());
+          } finally {
+            try {
+              socket.close(); // close socket when done
+            } catch (IOException e) {
+              LOG.log(Level.WARNING, "Error closing socket: {0}", e.getMessage());
+            }
+            LOG.log(Level.INFO, "Client disconnected.");
+          }
+        });
       }
     }
   }
@@ -104,5 +119,21 @@ public class TcpServer {
             out.flush();
           }
         }
+  }
+
+  /**
+   * Shuts down the server gracefully, closing all client connections.
+   */
+  public void shutdown() {
+    LOG.log(Level.INFO, "Shutting down server...");
+    executorService.shutdown();
+    try {
+      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+        executorService.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      executorService.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
   }
 }
