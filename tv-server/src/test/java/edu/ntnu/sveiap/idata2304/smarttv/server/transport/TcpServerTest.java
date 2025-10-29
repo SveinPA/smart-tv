@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import edu.ntnu.sveiap.idata2304.smarttv.common.logic.SmartTv;
 import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Limits;
 import edu.ntnu.sveiap.idata2304.smarttv.server.adapter.ProtocolHandler;
+import edu.ntnu.sveiap.idata2304.smarttv.server.broadcast.Broadcaster;
 
 class TcpServerTest {
 
@@ -33,8 +34,9 @@ class TcpServerTest {
    */
   private static Thread startServer(int port) {
     SmartTv tv = new SmartTv(10);
-    ProtocolHandler handler = new ProtocolHandler(tv);
-    TcpServer server = new TcpServer(port, handler);
+    Broadcaster broadcaster = new Broadcaster();
+    ProtocolHandler handler = new ProtocolHandler(tv, broadcaster);
+    TcpServer server = new TcpServer(port, handler, broadcaster);
 
     Thread t = new Thread(() -> {
       try {

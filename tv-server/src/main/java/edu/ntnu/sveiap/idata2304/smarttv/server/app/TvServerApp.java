@@ -9,6 +9,7 @@ import java.util.logging.Handler;
 import edu.ntnu.sveiap.idata2304.smarttv.common.logic.SmartTv;
 import edu.ntnu.sveiap.idata2304.smarttv.server.adapter.ProtocolHandler;
 import edu.ntnu.sveiap.idata2304.smarttv.server.transport.TcpServer;
+import edu.ntnu.sveiap.idata2304.smarttv.server.broadcast.Broadcaster;
 
 /**
  * Main application class for the TV server.
@@ -47,9 +48,9 @@ public final class TvServerApp {
         System.out.println("[TvServerApp] Starting on port " + port);
 
         SmartTv tv = new SmartTv(10);
-
-        ProtocolHandler handler = new ProtocolHandler(tv);
-        TcpServer server = new TcpServer(port, handler);
+        Broadcaster broadcaster = new Broadcaster();
+        ProtocolHandler handler = new ProtocolHandler(tv, broadcaster);
+        TcpServer server = new TcpServer(port, handler,broadcaster);
 
         server.start();
 

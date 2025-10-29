@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Codec;
 import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Limits;
 import edu.ntnu.sveiap.idata2304.smarttv.server.adapter.ProtocolHandler;
+import edu.ntnu.sveiap.idata2304.smarttv.server.broadcast.Broadcaster;
 
 /**
  * A simple TCP server that listens for incoming connections on a specified port.
@@ -30,15 +31,17 @@ public class TcpServer {
   private final int port;
   private final ProtocolHandler handler;
   private final ExecutorService executorService;
+  private final Broadcaster broadcaster;
 
   /**
    * Creates a TCP server that listens on the specified port and uses the given ProtocolHandler
    * to process incoming lines.
    */
-  public TcpServer(int port, ProtocolHandler handler) {
+  public TcpServer(int port, ProtocolHandler handler, Broadcaster broadcaster) {
     this.port = port;
     this.handler = handler;
     this.executorService = Executors.newCachedThreadPool();
+    this.broadcaster = broadcaster;
   }
 
   /**
@@ -85,40 +88,48 @@ public class TcpServer {
    */
   private void serve(Socket socket) throws IOException {
 
-    try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-        OutputStream out = socket.getOutputStream()) {
+    try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(),
+     StandardCharsets.UTF_8));
+      OutputStream out = socket.getOutputStream()) {
 
-          String raw;
-          while ((raw = in.readLine()) != null) {
+      broadcaster.subscribe(out);
 
-            String line = raw.trim();
-            if (line.isEmpty()) {
-              continue;
-            }
+      try {
+        String raw;
+        while ((raw = in.readLine()) != null) {
 
-            if (line.length() > Limits.MAX_LINE_LENGTH) {
-              out.write(Codec.errLineTooLong().getBytes(StandardCharsets.UTF_8));
-              out.flush();
-              continue;
-            }
-
-            final String reply;
-            try {
-              reply = handler.handleLine(line);
-            } catch (Exception e) {
-              LOG.log(Level.SEVERE, "Unexpected handler error: " + e.getMessage(), e);
-
-              // In case of unexpected error, send a generic server error response.
-              byte[] b = Codec.errServerError().getBytes(StandardCharsets.UTF_8);
-              out.write(b);
-              out.flush();
-              continue;
-            }
-
-            out.write(reply.getBytes(StandardCharsets.UTF_8));
-            out.flush();
+          String line = raw.trim();
+          if (line.isEmpty()) {
+            continue;
           }
+
+          if (line.length() > Limits.MAX_LINE_LENGTH) {
+            out.write(Codec.errLineTooLong().getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            continue;
+          }
+
+          final String reply;
+          try {
+            reply = handler.handleLine(line, out);
+          } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Unexpected handler error: " + e.getMessage(), e);
+
+            // In case of unexpected error, send a generic server error response.
+            byte[] b = Codec.errServerError().getBytes(StandardCharsets.UTF_8);
+            out.write(b);
+            out.flush();
+            continue;
+          }
+
+          out.write(reply.getBytes(StandardCharsets.UTF_8));
+          out.flush();
         }
+      } finally {
+        // undregister client when disconnecting
+        broadcaster.unsubscribe(out);
+      }
+    }
   }
 
   /**

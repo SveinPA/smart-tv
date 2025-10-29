@@ -1,9 +1,11 @@
 package edu.ntnu.sveiap.idata2304.smarttv.server.adapter;
 
+import java.io.OutputStream;
 import edu.ntnu.sveiap.idata2304.smarttv.common.logic.SmartTv;
 import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Codec;
 import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Command;
 import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Request;
+import edu.ntnu.sveiap.idata2304.smarttv.server.broadcast.Broadcaster;
 
 /**
  * Server-side protocol handler for Smart TV protocol.  
@@ -14,6 +16,7 @@ import edu.ntnu.sveiap.idata2304.smarttv.common.protocol.Request;
  */
 public final class ProtocolHandler {
   private final SmartTv tv;
+  private final Broadcaster broadcaster;
   
   /**
    * Creates a ProtocolHandler with the given SmartTv instance.
@@ -21,9 +24,11 @@ public final class ProtocolHandler {
    * @param tv The SmartTv instance to control.
    * @throws IllegalArgumentException if tv is null.
    */
-  public ProtocolHandler(SmartTv tv) {
+  public ProtocolHandler(SmartTv tv, Broadcaster broadcaster) {
     if (tv == null) throw new IllegalArgumentException("tv cannot be null");
+    if (broadcaster == null) throw new IllegalArgumentException("broadcaster cannot be null");
     this.tv = tv;
+    this.broadcaster = broadcaster;
   }
 
   /**
@@ -32,7 +37,7 @@ public final class ProtocolHandler {
    * @param line raw line (may be null)
    * @return protocol response line (always CRLF terminated via Codec)
    */
-  public String handleLine(String line) {
+  public String handleLine(String line, OutputStream currentClient) {
     final Request req;
     try {
       req = Codec.parseRequest(line);
@@ -48,9 +53,9 @@ public final class ProtocolHandler {
         case OFF -> handleOff();
         case CHANNELS -> handleChannels();
         case GET -> handleGet();
-        case SET -> handleSet(req.arg());
-        case UP -> handleUp();
-        case DOWN -> handleDown();
+        case SET -> handleSet(req.arg(), currentClient);
+        case UP -> handleUp(currentClient);
+        case DOWN -> handleDown(currentClient);
         case PING -> handlePing();
         // SUB/UNSUB/PING not implemented yet at adapter level; treat as BAD_COMMAND until added
         default -> Codec.errBadCommand();
@@ -89,30 +94,36 @@ public final class ProtocolHandler {
     }
   }
 
-  private String handleSet(Integer n) {
+  private String handleSet(Integer n, OutputStream currentClient) {
     try {
       tv.setChannel(n);
-      return Codec.okChannel(tv.getChannel());
-    } catch (IllegalStateException ex) { // TV off
+      int newChannel = tv.getChannel();
+      broadcaster.broadcastExcept(Codec.evtChannel(newChannel), currentClient);
+      return Codec.okChannel(newChannel);
+    } catch (IllegalStateException ex) {
       return Codec.errTvOff();
-    } catch (IllegalArgumentException outOfRange) { // channel bounds
+    } catch (IllegalArgumentException outOfRange) {
       return Codec.errOutOfRange();
     }
   }
 
-  private String handleUp() {
+  private String handleUp(OutputStream currentClient) {
     try {
       tv.channelUp();
-      return Codec.okChannel(tv.getChannel());
+      int newChannel = tv.getChannel();
+      broadcaster.broadcastExcept(Codec.evtChannel(newChannel), currentClient);
+      return Codec.okChannel(newChannel);
     } catch (IllegalStateException ex) {
       return mapIllegalState(ex);
     }
   }
 
-  private String handleDown() {
+  private String handleDown(OutputStream currentClient) {
     try {
       tv.channelDown();
-      return Codec.okChannel(tv.getChannel());
+      int newChannel = tv.getChannel();
+      broadcaster.broadcastExcept(Codec.evtChannel(newChannel), currentClient);
+      return Codec.okChannel(newChannel);
     } catch (IllegalStateException ex) {
       return mapIllegalState(ex);
     }

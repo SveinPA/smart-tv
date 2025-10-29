@@ -173,7 +173,7 @@ public final class Codec {
    * @return The encoded event response string.
    */
   public static String evtChannel(int ch) {
-    return "EVT CHANNEL" + ch + CRLF;
+    return "EVT CHANNEL " + ch + CRLF;
   }
 
   /**
