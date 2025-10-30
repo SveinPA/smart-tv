@@ -41,35 +41,35 @@
 - [x] Commit + tag `v0.3.0-robustness`
 
 ## Uke 41 — Klientopplevelse & kvalitet
-- [ ] Forbedre CLI (hjelpetekst, statuslinje for aktiv kanal)  
-- [ ] “Røyktest”-manus i README (copy-paste-kommandoer for rask verifikasjon)  
-- [ ] Små UX-detaljer (f.eks. kommando-aliaser: `on/off/up/down`)  
-- [ ] Commit + tag `v0.4.0-client-polish`
+- [x] Forbedre CLI (hjelpetekst, statuslinje for aktiv kanal)  
+- [x] “Røyktest”-manus i README (copy-paste-kommandoer for rask verifikasjon)  
+- [x] Små UX-detaljer (f.eks. kommando-aliaser: `on/off/up/down`)  
+- [x] Commit + tag `v0.4.0-client-polish`
 
 ## Uke 42 — Forberedelser til multiklient
-- [ ] Design **Broadcaster**-grensesnitt (push av `EVT CHANNEL <n>`)  
-- [ ] Definer `SUB/UNSUB` og `PING` i protokollen (oppdater `docs/protocol.md`)  
-- [ ] Klienten: støtt (men ignorer) ukjente `EVT` uten å knekke  
-- [ ] Commit + tag `v0.5.0-event-design`
+- [x] Design **Broadcaster**-grensesnitt (push av `EVT CHANNEL <n>`)  
+- [x] Definer `SUB/UNSUB` og `PING` i protokollen (oppdater `docs/protocol.md`)  
+- [x] Klienten: støtt (men ignorer) ukjente `EVT` uten å knekke  
+- [x] Commit + tag `v0.5.0-event-design`
 
 ## Uke 43 — Implementer asynkrone events
-- [ ] Server: implementer Broadcaster (trådsikker liste over abonnenter)  
-- [ ] Server: send `EVT CHANNEL <n>` ved kanalendring til alle abonnenter  
-- [ ] Klient: legg til lytter for asynkrone linjer parallelt med sync-kommandoer  
-- [ ] Manuell test: to klienter; sett kanal i A → B får `EVT CHANNEL` umiddelbart  
-- [ ] Commit + tag `v0.6.0-async-events`
+- [x] Server: implementer Broadcaster (trådsikker liste over abonnenter)  
+- [x] Server: send `EVT CHANNEL <n>` ved kanalendring til alle abonnenter  
+- [x] Klient: legg til lytter for asynkrone linjer parallelt med sync-kommandoer  
+- [x] Manuell test: to klienter; sett kanal i A → B får `EVT CHANNEL` umiddelbart  
+- [x] Commit + tag `v0.6.0-async-events`
 
 ## Uke 44 — Del 3: Multiklient & levering (frist fredag)
-- [ ] Server: **multi-threading** (én klient pr. tråd / thread-pool)  
-- [ ] Trådsikring i `SmartTv` for muterende operasjoner (kritiske seksjoner)  
-- [ ] Tåle “busy” klient uten å blokkere andre (socket-timeouts, non-blocking IO eller separate tråder)  
-- [ ] Integrasjonstester (`it-tests`): flere klienter, samtidig SET, event-distribusjon  
-- [ ] Endelig gjennomgang av `docs/architecture.md` og `docs/protocol.md`  
-- [ ] README: kjøre-instruksjoner (Maven/VS Code), kjent feil, versjonslogg  
+- [x] Server: **multi-threading** (én klient pr. tråd / thread-pool)  
+- [x] Trådsikring i `SmartTv` for muterende operasjoner (kritiske seksjoner)  
+- [x] Tåle “busy” klient uten å blokkere andre (socket-timeouts, non-blocking IO eller separate tråder)  
+~~Integrasjonstester (`it-tests`): flere klienter, samtidig SET, event-distribusjon~~ **Skipped**  
+- [x] Endelig gjennomgang av `docs/architecture.md` og `docs/protocol.md`  
+- [x] README: kjøre-instruksjoner (Maven/VS Code), kjent feil, versjonslogg  
 - [ ] Leveranse: zip eller repo-lenke (sjekk at alt er offentlig/tilgjengelig)  
 - [ ] Tag `v1.0.0` og push
 
-## Ekstra (valgfritt)
-- [ ] UDP-variant av transportlaget (uendret `logic`/`protocol`)  
-- [ ] GUI for klient (JavaFX)  
-- [ ] Keep-alive/idle-timeout på server
+## Ekstra
+~~UDP-variant av transportlaget (uendret `logic`/`protocol`)~~ **Skipped**  
+~~GUI for klient (JavaFX)~~ **Skipped**  
+~~Keep-alive/idle-timeout på server~~ **Skipped**

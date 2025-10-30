@@ -136,7 +136,7 @@ S: EVT CHANNEL 5
 ### PING
 ```
 C: PING
-S: OK
+S: OK PONG
 ```
 
 ### Whitespace and too-long handling
@@ -150,7 +150,8 @@ S: OK CH=3
 C:
 (empty line ignored)
 C: XXXX.. (257 chars)
-S: ERR 400 LINE_TOO_LONG
+S: ERR 400 BAD_COMMAND
+```
 
 ### Errors
 ```

@@ -1,0 +1,214 @@
+@startuml SmartTV_Complete_Class_Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+
+title Smart TV - Complete Class Diagram
+
+legend left
+  **Relationship types:**
+  *--  Composition (owns lifecycle)
+  o--  Aggregation (has reference)
+  -->  Association / Dependency
+  <|-- Inheritance
+  ..>  Uses (loose coupling)
+endlegend
+
+package "common" <<Rectangle>> {
+
+  class TvState {
+    - boolean on
+    - int channels
+    - int currentChannel
+    --
+    + TvState(int channels)
+    + isOn(): boolean
+    + setOn(boolean on): void
+    + getChannelRange(): int
+    + getCurrentChannel(): int
+    + setCurrentChannel(int channel): void
+  }
+
+  class SmartTv {
+    - TvState tvState
+    --
+    + SmartTv(int channels)
+    + synchronized turnOn(): void
+    + synchronized turnOff(): void
+    + synchronized isOn(): boolean
+    + synchronized getNumberOfChannels(): int
+    + synchronized getChannel(): int
+    + synchronized setChannel(int channel): void
+    + synchronized channelUp(): void
+    + synchronized channelDown(): void
+  }
+
+  enum Command {
+    ON
+    OFF
+    STATUS
+    CHANNELS
+    GET
+    SET
+    UP
+    DOWN
+    SUB
+    UNSUB
+    PING
+  }
+
+  class Request <<record>> {
+    + command: Command
+    + arg: Integer
+    --
+    + Request(Command, Integer)
+    + command(): Command
+    + arg(): Integer
+  }
+
+  class Codec <<utility>> {
+    --
+    + {static} parseRequest(String): Request
+    + {static} ok(): String
+    + {static} okStatus(boolean): String
+    + {static} okChannels(int): String
+    + {static} okChannel(int): String
+    + {static} okPong(): String
+    + {static} errBadCommand(): String
+    + {static} errTvOff(): String
+    + {static} errOutOfRange(): String
+    + {static} errInvalidState(): String
+    + {static} errServerError(): String
+    + {static} evtChannel(int): String
+    + {static} evtPowerOn(): String
+    + {static} evtPowerOff(): String
+  }
+
+  class Limits <<utility>> {
+    + {static} MAX_LINE_LENGTH: int = 256
+  }
+
+  SmartTv *-- "1" TvState : owns
+  Request --> Command : uses
+  Codec ..> Request : creates
+  Codec ..> Command : references
+}
+
+package "tv-server" <<Rectangle>> {
+
+  class TvServerApp {
+    + {static} main(String[]): void
+    - {static} parsePort(String[]): int
+  }
+
+  class TcpServer {
+    - int port
+    - ProtocolHandler handler
+    - ExecutorService executorService
+    - Broadcaster broadcaster
+    --
+    + TcpServer(int, ProtocolHandler, Broadcaster)
+    + start(): void
+    - serve(Socket): void
+  }
+
+  class ProtocolHandler {
+    - SmartTv tv
+    - Broadcaster broadcaster
+    --
+    + ProtocolHandler(SmartTv, Broadcaster)
+    + handleLine(String, OutputStream): String
+    - handleStatus(): String
+    - handleOn(): String
+    - handleOff(): String
+    - handleChannels(): String
+    - handleGet(): String
+    - handleSet(Integer, OutputStream): String
+    - handleUp(OutputStream): String
+    - handleDown(OutputStream): String
+    - handlePing(): String
+  }
+
+  class Broadcaster {
+    - Set<OutputStream> subscribers
+    --
+    + subscribe(OutputStream): void
+    + unsubscribe(OutputStream): void
+    + broadcast(String): void
+    + broadcastExcept(String, OutputStream): void
+  }
+
+  TvServerApp ..> TcpServer : creates
+  TvServerApp ..> ProtocolHandler : creates
+  TvServerApp ..> Broadcaster : creates
+  TcpServer o-- "1" ProtocolHandler : uses
+  TcpServer o-- "1" Broadcaster : uses
+  TcpServer ..> "ExecutorService" : uses
+  ProtocolHandler o-- "1" SmartTv : delegates to
+  ProtocolHandler o-- "1" Broadcaster : notifies
+  ProtocolHandler ..> Codec : uses
+  Broadcaster o-- "0..*" OutputStream : manages
+}
+
+package "remote-client" <<Rectangle>> {
+
+  class RemoteClientApp {
+    + {static} main(String[]): void
+  }
+
+  class TcpClient {
+    - Socket socket
+    - BufferedReader in
+    - OutputStream out
+    --
+    + TcpClient(String host, int port)
+    + send(String): void
+    + receiveLine(): String
+    + close(): void
+  }
+
+  class CliUi {
+    - String host
+    - int port
+    --
+    + CliUi(String host, int port)
+    + run(): void
+    - {static} startMessageListener(TcpClient): void
+    - {static} showInitialStatus(TcpClient): void
+    - {static} printWelcome(): void
+    - {static} printHelp(): void
+  }
+
+  RemoteClientApp ..> CliUi : creates
+  CliUi o-- TcpClient : uses
+  CliUi ..> Thread : creates listener
+}
+
+note right of SmartTv
+  **Thread-safe:** All methods
+  are synchronized to support
+  multi-client access
+end note
+
+note right of Broadcaster
+  **Thread-safe:** Uses
+  ConcurrentHashMap.newKeySet()
+  for subscriber management
+end note
+
+note right of TcpServer
+  **Multi-threading:** Uses
+  Executors.newCachedThreadPool()
+  for handling multiple clients
+  concurrently
+end note
+
+note bottom of CliUi
+  **Async listener:** Background
+  daemon thread reads messages
+  from server (OK/ERR/EVT)
+end note
+
+@enduml

@@ -1,0 +1,163 @@
+@startuml SmartTV_Event_Broadcasting_Sequence
+
+title Multi-Client Event Broadcasting - Channel Change Scenario
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 150
+
+actor "Client A" as ClientA
+actor "Client B" as ClientB
+actor "Client C" as ClientC
+participant "TcpServer\n(Thread Pool)" as Server
+participant "ProtocolHandler" as Handler
+participant "SmartTv\n(Logic)" as TV
+participant "Broadcaster" as Broadcaster
+
+== Initial Connection & Subscription ==
+
+ClientA -> Server: Connect (TCP)
+activate Server
+Server -> Server: executorService.submit()
+note right: New thread spawned\nfor Client A
+activate ClientA
+Server --> ClientA: Connection established
+deactivate Server
+
+ClientB -> Server: Connect (TCP)
+activate Server
+Server -> Server: executorService.submit()
+note right: New thread spawned\nfor Client B
+activate ClientB
+Server --> ClientB: Connection established
+deactivate Server
+
+ClientC -> Server: Connect (TCP)
+activate Server
+Server -> Server: executorService.submit()
+note right: New thread spawned\nfor Client C
+activate ClientC
+Server --> ClientC: Connection established
+deactivate Server
+
+ClientA -> Handler: SUB
+activate Handler
+Handler -> Broadcaster: subscribe(ClientA.outputStream)
+activate Broadcaster
+Broadcaster -> Broadcaster: subscribers.add(ClientA)
+Broadcaster --> Handler: subscribed
+deactivate Broadcaster
+Handler --> ClientA: OK
+deactivate Handler
+
+ClientB -> Handler: SUB
+activate Handler
+Handler -> Broadcaster: subscribe(ClientB.outputStream)
+activate Broadcaster
+Broadcaster -> Broadcaster: subscribers.add(ClientB)
+Broadcaster --> Handler: subscribed
+deactivate Broadcaster
+Handler --> ClientB: OK
+deactivate Handler
+
+ClientC -> Handler: SUB
+activate Handler
+Handler -> Broadcaster: subscribe(ClientC.outputStream)
+activate Broadcaster
+Broadcaster -> Broadcaster: subscribers.add(ClientC)
+Broadcaster --> Handler: subscribed
+deactivate Broadcaster
+Handler --> ClientC: OK
+deactivate Handler
+
+== Channel Change by Client A ==
+
+ClientA -> Handler: SET 5
+activate Handler
+Handler -> Handler: parseRequest("SET 5")
+Handler -> TV: setChannel(5)
+activate TV
+TV -> TV: synchronized method\nvalidate channel\nupdate TvState
+TV --> Handler: success
+deactivate TV
+
+Handler -> Broadcaster: broadcastExcept("EVT CHANNEL 5", ClientA)
+activate Broadcaster
+note right of Broadcaster
+  Broadcast to all subscribers
+  **except** the sender (ClientA)
+end note
+
+par Parallel Broadcast to Subscribers (except sender)
+  Broadcaster -> ClientB: EVT CHANNEL 5
+  note right: Asynchronous event\nno response expected
+  Broadcaster -> ClientC: EVT CHANNEL 5
+  note right: Asynchronous event\nno response expected
+end
+
+Broadcaster --> Handler: broadcasted
+deactivate Broadcaster
+
+Handler --> ClientA: OK CH=5
+note left: Only sender gets\nOK response
+deactivate Handler
+
+== Client B Receives Event ==
+
+ClientB -> ClientB: Background listener thread\nreads "EVT CHANNEL 5"
+ClientB -> ClientB: Display: "[Server] EVT CHANNEL 5"
+
+== Client C Receives Event ==
+
+ClientC -> ClientC: Background listener thread\nreads "EVT CHANNEL 5"
+ClientC -> ClientC: Display: "[Server] EVT CHANNEL 5"
+
+== Channel Up by Client B ==
+
+ClientB -> Handler: UP
+activate Handler
+Handler -> Handler: parseRequest("UP")
+Handler -> TV: channelUp()
+activate TV
+TV -> TV: synchronized method\ncurrent = 6
+TV --> Handler: success
+deactivate TV
+
+Handler -> Broadcaster: broadcastExcept("EVT CHANNEL 6", ClientB)
+activate Broadcaster
+
+par Parallel Broadcast to Subscribers (except sender)
+  Broadcaster -> ClientA: EVT CHANNEL 6
+  Broadcaster -> ClientC: EVT CHANNEL 6
+end
+
+Broadcaster --> Handler: broadcasted
+deactivate Broadcaster
+
+Handler --> ClientB: OK CH=6
+deactivate Handler
+
+ClientA -> ClientA: Displays: "[Server] EVT CHANNEL 6"
+ClientC -> ClientC: Displays: "[Server] EVT CHANNEL 6"
+
+== Key Benefits ==
+
+note over ClientA, ClientC
+  **No Polling Required:**
+  - Clients don't need to continuously ask for state
+  - Server pushes changes immediately to all subscribers
+  - Efficient use of network and server resources
+
+  **Thread Safety:**
+  - SmartTv methods are synchronized
+  - Broadcaster uses ConcurrentHashMap.newKeySet()
+  - Each client handled by separate thread
+
+  **Graceful Degradation:**
+  - If broadcast to a client fails, that client is
+    automatically unsubscribed from Broadcaster
+end note
+
+@enduml
