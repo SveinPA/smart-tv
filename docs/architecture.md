@@ -260,70 +260,11 @@ Manual smoke (README)
 
 ---
 
-## 19) Klassediagram (oversikt)
+## 19) Class Diagram (Complete)
 
-PlantUML-kilde (logiske klasser og relasjoner). Dette er en lettvektsmodell – detaljer som alle metodesignaturer i `Codec` er forkortet for lesbarhet.
+The complete diagram can be seen in `docs/class_diagram_complete.plantuml` or `docs/class_diagram_complete.png`.
 
-```plantuml
-@startuml
-skinparam classAttributeIconSize 0
-skinparam linetype ortho
+## 20) Sequence Diagram (Multi-client event broadcasting)
 
-legend left
-  Relationship typer:
-  *--  Komposisjon (eier livssyklus)
-  -->  Direkte avhengighet (felt / sterk bruk)
-  ..>  Løs kobling / bruker statiske metoder
-endlegend
-
-package common {
-  class TvState {
-    - boolean on
-    - int channels
-    - int currentChannel
-    + isOn()
-    + getChannelRange()
-    + getCurrentChannel()
-    + setOn(boolean)
-    + setCurrentChannel(int)
-  }
-  class SmartTv {
-    - TvState tvState
-    + turnOn()
-    + turnOff()
-    + isOn()
-    + getNumberOfChannels()
-    + getChannel()
-    + setChannel(int)
-    + channelUp()
-    + channelDown()
-  }
-  class Codec {
-    {static} parseRequest(line)
-    {static} ok()/okStatus()/okChannels()/okChannel()/okPong()
-    {static} errBadCommand()/errTvOff()/errOutOfRange()/errInvalidState()/errServerError()
-  }
-  enum Command
-  class Request {
-    + command : Command
-    + arg : Integer
-  }
-}
-package "tv-server" {
-  class ProtocolHandler {
-    - SmartTv tv
-    + handleLine(String)
-  }
-}
-
-SmartTv *-- "1" TvState : eier
-ProtocolHandler --> "1" SmartTv : delegasjon
-ProtocolHandler ..> Codec : formattering/parsing
-Codec ..> Command : referanse
-Codec ..> Request : produserer
-Request --> Command : felt
-@enduml
-```
-
-Generering: bruk PlantUML-plugin i IDE, eller kjør en ekstern PlantUML-renderer.
+The sequence diagram can be seen in `docs/sequence_event_broadcast.plantuml` or `docs/sequence_event_broadcast.png`.
 
